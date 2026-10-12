@@ -6,7 +6,7 @@ import Security
 
 /// Minimal Keychain wrapper for passwords and the private key.
 enum Keychain {
-    static let service = "com.rashestlynx.connectbot"
+    static let service = "com.rashestlynx.rigpilot"
 
     static func passwordAccount(for host: Host) -> String { "password.\(host.id.uuidString)" }
 
@@ -65,7 +65,7 @@ enum KeyManager {
         Keychain.delete(account: account)
     }
 
-    /// The public key as one OpenSSH line ("ssh-ed25519 AAAA... ConnectBot-iPhone"),
+    /// The public key as one OpenSSH line ("ssh-ed25519 AAAA... RigPilot-iPhone"),
     /// ready to paste into the server's authorized_keys file.
     static var publicKeyLine: String? {
         guard let key = privateKey else { return nil }
@@ -77,7 +77,7 @@ enum KeyManager {
         }
         appendString(Data("ssh-ed25519".utf8))
         appendString(key.publicKey.rawRepresentation)
-        return "ssh-ed25519 \(blob.base64EncodedString()) ConnectBot-iPhone"
+        return "ssh-ed25519 \(blob.base64EncodedString()) RigPilot-iPhone"
     }
 }
 
@@ -97,7 +97,7 @@ enum HostKeyStore {
         UserDefaults.standard.removeObject(forKey: defaultsKey(host))
     }
 
-    /// SHA256 fingerprint in the same form OpenSSH and ConnectBot print.
+    /// SHA256 fingerprint in the same form OpenSSH prints.
     static func fingerprint(_ openSSHLine: String) -> String {
         let parts = openSSHLine.split(separator: " ")
         guard parts.count >= 2, let blob = Data(base64Encoded: String(parts[1])) else { return openSSHLine }

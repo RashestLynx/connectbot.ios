@@ -2,7 +2,7 @@ import SwiftTerm
 import SwiftUI
 
 @main
-struct ConnectBotApp: App {
+struct RigPilotApp: App {
     @StateObject private var store = HostStore()
 
     var body: some Scene {
@@ -20,6 +20,7 @@ struct HostListView: View {
     @EnvironmentObject private var store: HostStore
     @State private var editing: Host?
     @State private var showingKeys = false
+    @State private var showingAbout = false
 
     var body: some View {
         NavigationStack {
@@ -50,13 +51,16 @@ struct HostListView: View {
                     }
                 }
             }
-            .navigationTitle("ConnectBot")
+            .navigationTitle("RigPilot Shell")
             .navigationDestination(for: Host.self) { host in
                 TerminalScreen(host: host)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Keys") { showingKeys = true }
+                    Menu {
+                        Button("Keys") { showingKeys = true }
+                        Button("About") { showingAbout = true }
+                    } label: { Image(systemName: "ellipsis.circle") }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { editing = Host() } label: { Image(systemName: "plus") }
@@ -67,6 +71,9 @@ struct HostListView: View {
             }
             .sheet(isPresented: $showingKeys) {
                 KeysView()
+            }
+            .sheet(isPresented: $showingAbout) {
+                AboutView()
             }
         }
     }
@@ -110,7 +117,7 @@ struct HostEditorView: View {
                             }
                         }
                     } else {
-                        Text("Uses the key from Keys on the host list. Its public key must be on the computer.")
+                        Text("Uses the key from ⋯ → Keys on the host list. Its public key must be on the computer.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
@@ -276,4 +283,68 @@ struct TerminalRepresentable: UIViewRepresentable {
 
     func makeUIView(context: Context) -> TerminalView { view }
     func updateUIView(_ uiView: TerminalView, context: Context) {}
+}
+
+// MARK: - About
+
+struct AboutView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private var version: String {
+        let info = Bundle.main.infoDictionary
+        let short = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(short) (\(build))"
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("RigPilot Shell").font(.title2.bold())
+                        Text("Control your computer from your phone over SSH.").foregroundStyle(.secondary)
+                        Text("Version \(version)").font(.footnote).foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                Section("Open-source software") {
+                    Credit(name: "SwiftTerm", detail: "Terminal emulator · MIT License · Miguel de Icaza",
+                           url: "https://github.com/migueldeicaza/SwiftTerm")
+                    Credit(name: "Citadel", detail: "SSH client · MIT License · Orlandos",
+                           url: "https://github.com/orlandos-nl/Citadel")
+                    Credit(name: "SwiftNIO SSH", detail: "SSH protocol · Apache License 2.0 · Apple Inc.",
+                           url: "https://github.com/apple/swift-nio-ssh")
+                    Credit(name: "SwiftNIO, Swift Crypto, Swift Log", detail: "Apache License 2.0 · Apple Inc.",
+                           url: "https://github.com/apple/swift-nio")
+                    Credit(name: "BigInt", detail: "MIT License · Károly Lőrentey",
+                           url: "https://github.com/attaswift/BigInt")
+                }
+                Section {
+                    Text("Inspired by ConnectBot for Android. RigPilot Shell is not affiliated with the ConnectBot project.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("About")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+        }
+    }
+}
+
+private struct Credit: View {
+    let name: String
+    let detail: String
+    let url: String
+
+    var body: some View {
+        Link(destination: URL(string: url)!) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name).foregroundStyle(.primary)
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
 }

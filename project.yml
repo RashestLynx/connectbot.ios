@@ -1,4 +1,4 @@
-name: ConnectBotiOS
+name: RigPilotShell
 options:
   bundleIdPrefix: com.rashestlynx
   deploymentTarget:
@@ -23,7 +23,7 @@ packages:
     minVersion: 0.3.4
     maxVersion: 0.4.0
 targets:
-  ConnectBot:
+  RigPilot:
     type: application
     platform: iOS
     sources:
@@ -31,8 +31,8 @@ targets:
       - Resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.rashestlynx.connectbot
-        PRODUCT_NAME: ConnectBot
+        PRODUCT_BUNDLE_IDENTIFIER: com.rashestlynx.rigpilot
+        PRODUCT_NAME: RigPilot
         INFOPLIST_FILE: Resources/Info.plist
         TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
