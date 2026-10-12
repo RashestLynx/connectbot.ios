@@ -22,12 +22,21 @@ final class SSHSession: NSObject, ObservableObject, TerminalViewDelegate {
 
     init(host: Host) {
         self.host = host
+        // Start at screen size (not .zero) so the first terminal size is close to the real one.
         terminalView = TerminalView(
-            frame: .zero,
+            frame: UIScreen.main.bounds,
             font: UIFont.monospacedSystemFont(ofSize: CGFloat(host.fontSize), weight: .regular)
         )
         super.init()
         terminalView.terminalDelegate = self
+        // SwiftTerm's default background is clear, so each redraw painted over the old text without
+        // erasing it, and UIKit stretched the old picture on resize. An opaque background that is
+        // redrawn (not stretched) on every size change fixes the smeared, striped output.
+        terminalView.nativeBackgroundColor = .black
+        terminalView.nativeForegroundColor = UIColor(red: 0.75, green: 1.0, blue: 0.80, alpha: 1)
+        terminalView.backgroundColor = .black
+        terminalView.isOpaque = true
+        terminalView.contentMode = .redraw
     }
 
     func connect(password: String?) {
@@ -88,6 +97,10 @@ final class SSHSession: NSObject, ObservableObject, TerminalViewDelegate {
 
             try await client.withPTY(request) { inbound, outbound in
                 await MainActor.run { self.writer = outbound }
+                // The view may have been laid out (and resized) while the session was opening:
+                // tell the computer the size the terminal really has now.
+                let size = await MainActor.run { (self.terminalView.getTerminal().cols, self.terminalView.getTerminal().rows) }
+                try? await outbound.changeSize(cols: size.0, rows: size.1, pixelWidth: 0, pixelHeight: 0)
                 for try await output in inbound {
                     let buffer: ByteBuffer
                     switch output {
