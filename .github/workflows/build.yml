@@ -1,0 +1,53 @@
+name: iPhone Build
+
+# Builds an unsigned ConnectBot.ipa. Install it with Sideloadly (Windows/Mac),
+# which signs it with your own Apple ID. Runs on every push to main, or from
+# the Actions tab ("Run workflow").
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build unsigned IPA
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode
+        run: xcodebuild -version
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project ConnectBotiOS.xcodeproj \
+            -scheme ConnectBot \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/ConnectBot.app Payload/
+          zip -qr ConnectBot.ipa Payload
+          ls -la ConnectBot.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: connectbot-iphone-ipa
+          path: ConnectBot.ipa
+          if-no-files-found: error
