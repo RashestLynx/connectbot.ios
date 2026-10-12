@@ -1,0 +1,64 @@
+name: Android Build
+
+# Builds the Z Fold 5 APK from the Android code (RashestLynx/connectbot) and publishes it
+# here, in this private repo, so the download link only works for you:
+# https://github.com/RashestLynx/connectbot.ios/releases/download/android-latest/RigPilotShell.apk
+# Run it from the Actions tab ("Run workflow") after changing the Android app.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Z Fold 5 APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Android code
+        uses: actions/checkout@v4
+        with:
+          repository: RashestLynx/connectbot
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      - name: Delete old Android SDK cmdline-tools
+        run: rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: 'cmdline-tools;latest platform-tools'
+
+      - name: Build APK
+        run: >
+          ./gradlew :app:assembleOssRelease
+          -PabiFilters=arm64-v8a
+          -PreleaseAppIdSuffix=.fold
+          -PkeystoreFile="$GITHUB_WORKSPACE/signing/sideload.jks"
+          -PkeystoreAlias=sideload
+          -PkeystorePassword=sideload-key
+
+      # One rolling release, replaced on every build. Not marked "latest", so the iPhone
+      # link (releases/latest/download/RigPilot.ipa) keeps pointing at the iPhone build.
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_number }}
+        run: |
+          cp app/build/outputs/apk/oss/release/*.apk RigPilotShell.apk
+          SRC=$(git rev-parse --short HEAD)
+          gh release delete android-latest --repo "$REPO" --cleanup-tag --yes || true
+          gh release create android-latest RigPilotShell.apk --repo "$REPO" --latest=false \
+            --title "RigPilot Shell for Android (latest)" \
+            --notes "Open on your phone and tap RigPilotShell.apk to install or update. Build $RUN from RashestLynx/connectbot@$SRC."

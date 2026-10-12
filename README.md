@@ -1,6 +1,12 @@
 # RigPilot Shell (iPhone)
 
-**[⬇ Download the latest RigPilot.ipa](https://github.com/RashestLynx/connectbot.ios/releases/latest/download/RigPilot.ipa)** · [All releases](https://github.com/RashestLynx/connectbot.ios/releases)
+**[⬇ iPhone: download the latest RigPilot.ipa](https://github.com/RashestLynx/connectbot.ios/releases/latest/download/RigPilot.ipa)**
+(on your computer, then install with Sideloadly)
+
+**[⬇ Android: download the latest RigPilotShell.apk](https://github.com/RashestLynx/connectbot.ios/releases/download/android-latest/RigPilotShell.apk)**
+(open on your phone and tap the file)
+
+[All releases](https://github.com/RashestLynx/connectbot.ios/releases) · these links work only when signed in to GitHub, since this repo is private.
 
 Control your computer from your phone over SSH: a host list, password or key
 login, and a terminal with Esc/Ctrl/Tab/arrow keys above the keyboard.

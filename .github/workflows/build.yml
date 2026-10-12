@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '.github/workflows/android.yml'
+      - 'README.md'
 
 jobs:
   build:
