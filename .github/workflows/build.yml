@@ -12,6 +12,8 @@ jobs:
   build:
     name: Build unsigned IPA
     runs-on: macos-15
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,3 +53,16 @@ jobs:
           name: rigpilot-iphone-ipa
           path: RigPilot.ipa
           if-no-files-found: error
+
+      # A GitHub Release per build gives a permanent direct link to the newest IPA:
+      # https://github.com/RashestLynx/connectbot.ios/releases/latest/download/RigPilot.ipa
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.run_number }}
+          SHA: ${{ github.sha }}
+        run: |
+          gh release create "ios-build-$RUN" RigPilot.ipa \
+            --repo "$GITHUB_REPOSITORY" --target "$SHA" --latest \
+            --title "RigPilot Shell for iPhone (build $RUN)" \
+            --notes "Download RigPilot.ipa on your computer and install it with Sideloadly. Built from ${SHA:0:7}."

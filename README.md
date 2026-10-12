@@ -1,5 +1,7 @@
 # RigPilot Shell (iPhone)
 
+**[⬇ Download the latest RigPilot.ipa](https://github.com/RashestLynx/connectbot.ios/releases/latest/download/RigPilot.ipa)** · [All releases](https://github.com/RashestLynx/connectbot.ios/releases)
+
 Control your computer from your phone over SSH: a host list, password or key
 login, and a terminal with Esc/Ctrl/Tab/arrow keys above the keyboard.
 Inspired by [ConnectBot](https://connectbot.org) for Android (not affiliated).
